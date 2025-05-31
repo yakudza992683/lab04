@@ -1,4 +1,4 @@
-name: Build on Linux
+name: Build on Linux and Windows
 
 on:
   push:
@@ -8,9 +8,8 @@ on:
 
 jobs:
   build-gcc:
-    name: Build with GCC
+    name: Build with GCC (Linux)
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
@@ -21,9 +20,8 @@ jobs:
         run: cmake --build build
 
   build-clang:
-    name: Build with Clang
+    name: Build with Clang (Linux)
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
@@ -31,4 +29,28 @@ jobs:
       - name: Configure
         run: cmake -S . -B build -DCMAKE_CXX_COMPILER=clang++
       - name: Build
+        run: cmake --build build
+
+  build-msvc:
+    name: Build with MSVC (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure (MSVC)
+        run: cmake -S . -B build
+      - name: Build (MSVC)
+        run: cmake --build build --config Release
+
+  build-mingw:
+    name: Build with MinGW (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install MinGW and CMake
+        run: choco install mingw cmake -y
+      - name: Add MinGW to PATH
+        run: echo "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Configure (MinGW)
+        run: cmake -S . -B build -G "MinGW Makefiles"
+      - name: Build (MinGW)
         run: cmake --build build
